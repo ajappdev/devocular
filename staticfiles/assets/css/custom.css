@@ -1,0 +1,24 @@
+.accordion-no-padding-left
+{
+    padding-left:0 !important;
+    padding-top:0 !important;
+    border-top: none !important;
+    font-size:0.7em;
+}
+.accordion-content-no-padding-left
+{
+    padding-left:0 !important;
+}
+.p-no-m
+{
+    margin:0;
+}
+.text-muted-title
+{
+    font-weight:600;
+    font-size:1.2em;
+}
+.text-little
+{
+    font-size:0.8em;
+}
