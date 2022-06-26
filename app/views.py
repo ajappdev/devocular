@@ -67,8 +67,12 @@ def roadmap(request, project_id):
     be done, and the work in progress
     """
 
-    template = 'roadmap/home.html'
+    task_form = af.TaskForm(initial={"status": "Open"})
+    versions = am.Project.objects.get(id=project_id).versions()
+
+    template = 'roadmap/project-roadmap.html'
     context = {
-        "page_title": "Project roadmap"}
+        "page_title": "Project roadmap",
+        "versions": versions, "task_form":task_form}
 
     return render(request, template, context)

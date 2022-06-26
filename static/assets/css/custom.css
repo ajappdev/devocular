@@ -50,3 +50,43 @@ color:rgb(190, 190, 190)
 {
     font-weight:600;
 }
+.no-padding-bottom
+{
+    padding-bottom:0px;
+}
+.txt-right
+{
+    text-align:right;
+}
+.row_details_table
+{
+    display:none;
+}
+.td_break_spaces
+{
+    white-space: break-spaces;
+}
+.bg-white
+{
+    background:white;
+}
+.descriptive_table_key
+{
+    background: #404e67;
+    color: white;
+    font-weight: 600;
+    width: 200px;
+    border: 1px solid rgb(181, 192, 203) !important;
+}
+.descriptive_table_value
+{
+    border: 1px solid rgb(181, 192, 203) !important;
+}
+.hidden
+{
+    display:none;
+}
+.swal2-html-container
+{
+    overflow: hidden !important;
+}

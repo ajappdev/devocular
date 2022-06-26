@@ -25,6 +25,11 @@ TASK_STATUS = [
     ('Closed', 'Closed'),
 ]
 
+PRIORITY_TYPES = [
+    ('Normal', 'Normal'),
+    ('Urgent', 'Urgent'),
+    ('Critical', 'Critical'),
+]
 
 # DECLARING CLASSES
 class Company(models.Model):
@@ -201,10 +206,75 @@ class Version(models.Model):
         status among all the tasks of the version
         '''
         if self.number_of_tasks() > 0:
-            return self.number_of_closed_tasks()/self.number_of_tasks()
+            return (self.number_of_closed_tasks()/self.number_of_tasks()) * 100
         else:
             return 0
 
+    def number_of_bug_tasks(self):
+        '''
+        This function returns the number of bugs among all the tasks of
+        the version
+        '''
+        return len(Task.objects.filter(version=self, task_type='Bug'))
+
+    def number_of_small_adjustments_tasks(self):
+        '''
+        This function returns the number of small adjustments among all the
+        tasks of the version
+        '''
+        return len(Task.objects.filter(
+            version=self, task_type='Small adjustment'))
+
+    def number_of_architecture_tuning_tasks(self):
+        '''
+        This function returns the number of architecture tuning among all
+        the tasks of the version
+        '''
+        return len(Task.objects.filter(
+            version=self, task_type='Architecture tuning'))
+
+    def number_of_new_feature_tasks(self):
+        '''
+        This function returns the number of new features among all
+        the tasks of the version
+        '''
+        return len(Task.objects.filter(
+            version=self, task_type='New feature'))
+
+
+    def number_of_frontend_tasks(self):
+        '''
+        This function returns the number of front end tasks among all
+        the tasks of the version
+        '''
+        return len(Task.objects.filter(
+            version=self, task_end='Front end'))
+
+    def number_of_backend_tasks(self):
+        '''
+        This function returns the number of back end tasks among all
+        the tasks of the version
+        '''
+        return len(Task.objects.filter(
+            version=self, task_end='Back end'))
+
+    def number_of_fullstack_tasks(self):
+        '''
+        This function returns the number of full stack tasks among all
+        the tasks of the version
+        '''
+        return len(Task.objects.filter(
+            version=self, task_end='Full stack'))
+
+    def percentage_of_bugs(self):
+        '''
+        This function returns the number of bugs among all the tasks of
+        the version
+        '''
+        if self.number_of_tasks() > 0:
+            return (self.number_of_bug_tasks()/self.number_of_tasks()) * 100
+        else:
+            return 0
         
 class Task(models.Model):
     version = models.ForeignKey(
@@ -216,11 +286,33 @@ class Task(models.Model):
     task_end = models.CharField(
         null=False, blank=False, max_length=50, choices=TASK_END_TYPES)
     user_profile = models.ManyToManyField(UserProfile)
+    priority = models.CharField(
+        null=False, blank=False, max_length=50, choices=PRIORITY_TYPES)
     status = models.CharField(
-        null=False, blank=False, max_length=50, choices=TASK_STATUS)
+        null=False,
+        blank=False,
+        max_length=50,
+        choices=TASK_STATUS,
+        default='Open')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
 
         return str(self.task_name)
+
+    def assigned_to(self):
+        """
+        This function returns the list of users that this task is assigned to.
+        """
+        return self.user_profile.all()
+
+    def names_assigned_to(self):
+        """
+        This function returns the names of the users that this task is assigned
+        to.
+        """
+        names: str = ""
+        for user in self.assigned_to():
+            names += user.complete_name + ", "
+        return names[:-2]
