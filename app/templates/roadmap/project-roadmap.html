@@ -7,56 +7,6 @@
 <div class="row">
 <div class="col-xl-12 col-md-12">
 
-    <div id="task_form_div" class="hidden">
-        <form id="task_form" action="" enctype="multipart/form-data" method="post" autocomplete="off">
-            {% csrf_token %}
-            <div class="row">
-            {{task_form.status.as_hidden}}
-            <div class="col-xl-12 col-md-12 hidden">
-                <div class="form-group">
-                <label class="form-label" for="{{ form.version.id_for_label }}">Version</label>
-                {{task_form.version}}
-            </div>
-            </div>
-            <div class="col-xl-12 col-md-12">
-                    <div class="form-group">
-                    <label class="form-label" for="{{ form.task_name.id_for_label }}">Task title</label>
-                    {{task_form.task_name}}
-                </div>
-            </div>
-            <div class="col-xl-12 col-md-12">
-                <div class="form-group">
-                    <label class="form-label" for="{{ form.task_description.id_for_label }}">Task description</label>
-                    <textarea name="task_description" cols="40" rows="2" class="form-control" required="" id="id_task_description" pwa2-uuid="EDITOR-0AB-4F2-8FB2D-0F9" pwa-fake-editor="" spellcheck="false" style="resize:none; position: relative !important; z-index: auto !important;"></textarea>
-                </div>
-            </div>
-            <div class="col-xl-4 col-md-12">
-                <div class="form-group">
-                    <label class="form-label" for="{{ form.task_type.id_for_label }}">Task type</label>
-                    {{task_form.task_type}}
-                </div>
-            </div>
-            <div class="col-xl-4 col-md-12">
-                <div class="form-group">
-                    <label class="form-label" for="{{ form.task_end.id_for_label }}">Task end</label>
-                    {{task_form.task_end}}
-                </div>
-            </div>
-            <div class="col-xl-4 col-md-12">
-                <div class="form-group">
-                    <label class="form-label" for="{{ form.priority.id_for_label }}">Priority</label>
-                    {{task_form.priority}}
-                </div>
-            </div>
-            <div class="col-xl-12 col-md-12">
-                <div class="form-group">
-                    <label class="form-label" for="{{ form.user_profile.id_for_label }}">Assigned to</label>
-                    {{task_form.user_profile}}
-                </div>
-            </div>
-        </div>
-        </form>
-    </div>
     
     {% for v in versions %}
     <div class="version_card card social-card bg-simple-c-white">
@@ -80,8 +30,8 @@
 
                         
                         <span class="hidden version_id">{{ v.id }}</span>
-                        <div class="Note-created f-right mb-2">
-                            <button class="add_task_button" class="btn btn-sm btn-primary">+ Add task</button>
+                        <div class="Note-created f-right mb-3">
+                            <button class="add_task_button btn btn-primary">+ Add task</button>
                         </div>
 
                         <div class="table-responsive">
@@ -89,6 +39,7 @@
                                 <thead>
                                     <tr>
                                         <th></th>
+                                        <th class="hidden">Task ID</th>
                                         <th>Task name</th>
                                         <th>Assigned to</th>
                                         <th>Status</th>
@@ -99,26 +50,31 @@
                                     {% for t in v.tasks %}
                                     <tr role="row" class="task_row_details">
                                         <td class="details-control task_{{t.id}}"></td>
-                                        <td class="sorting_1">{{t.task_name}}</td>
-                                        <td>{{t.names_assigned_to}}</td>
-                                        <td>{{t.status}}</td>
-                                        <td>Change status</td>
+                                        <td class="hidden task_id">{{t.id}}</td>
+                                        <td class="sorting_1 task_name">{{t.task_name}}</td>
+                                        <td class="task_assigned_to">{{t.names_assigned_to}}</td>
+                                        <td class="task_status">{{t.status}}</td>
+                                        <td><button class="update_task_button btn btn-sm btn-warning"><i class="fas fa-pen"></i> Edit</button></td>
                                     </tr>
                                     <tr class="row_details_table detail_task_{{t.id}}">
                                         <td colspan="10">
                                             <table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px; width: 100%;">
                                                 <tbody>
                                                     <tr class="bg-white">
+                                                        <td class="descriptive_table_key">Type</td>
+                                                        <td class="descriptive_table_value task_type">{{t.task_type}}</td>
+                                                    </tr>
+                                                    <tr class="bg-white">
                                                         <td class="descriptive_table_key">Priority</td>
-                                                        <td class="descriptive_table_value">{{t.priority}}</td>
+                                                        <td class="descriptive_table_value task_priority">{{t.priority}}</td>
                                                     </tr>
                                                     <tr class="bg-white">
                                                         <td class="descriptive_table_key">Side</td>
-                                                        <td class="descriptive_table_value">{{t.task_end}}</td>
+                                                        <td class="descriptive_table_value task_end">{{t.task_end}}</td>
                                                     </tr>
                                                     <tr class="bg-white">
                                                         <td class="descriptive_table_key">Description</td>
-                                                        <td class="descriptive_table_value td_break_spaces">{{t.task_description}}</td>
+                                                        <td class="descriptive_table_value td_break_spaces task_description">{{t.task_description}}</td>
                                                     </tr>
                                                 </tbody></table>
                                             </td>
@@ -178,22 +134,181 @@ $(document).on('click', '.details-control', function (){
 
 });
 
+
+
+/////////////////////////////////////////////////////////////////// -->
+///Create task code
+/////////////////////////////////////////////////////////////////// -->
 $(document).on('click', '.add_task_button', function (){
+
+        clicked_version = $(this).closest(".version_card").find(
+            ".version_id").text()
+
+        clicked_version_name = $(this).closest(".version_card").find(
+            ".version_name").text()
+
+        html_code = `
+                <form id="task_form" action="" enctype="multipart/form-data" method="post" autocomplete="off">
+                    {% csrf_token %}
+                    <div class="row">
+                    {{task_form.status.as_hidden}}
+                    <div class="col-xl-12 col-md-12 hidden">
+                        <div class="form-group">
+                        <label class="form-label" for="{{ form.version.id_for_label }}">Version</label>
+                        {{task_form.version}}
+                    </div>
+                    </div>
+                    <div class="col-xl-12 col-md-12">
+                            <div class="form-group">
+                            <label class="form-label" for="{{ form.task_name.id_for_label }}">Task title</label>
+                            {{task_form.task_name}}
+                        </div>
+                    </div>
+                    <div class="col-xl-12 col-md-12">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.task_description.id_for_label }}">Task description</label>
+                            <textarea name="task_description" cols="40" rows="2" class="form-control" required="" id="id_task_description" pwa2-uuid="EDITOR-0AB-4F2-8FB2D-0F9" pwa-fake-editor="" spellcheck="false" style="resize:none; position: relative !important; z-index: auto !important;"></textarea>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.task_type.id_for_label }}">Task type</label>
+                            {{task_form.task_type}}
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.task_end.id_for_label }}">Task end</label>
+                            {{task_form.task_end}}
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-md-12">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.priority.id_for_label }}">Priority</label>
+                            {{task_form.priority}}
+                        </div>
+                    </div>
+                    <div class="col-xl-12 col-md-12">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.user_profile.id_for_label }}">Assigned to</label>
+                            {{task_form.user_profile}}
+                        </div>
+                    </div>
+                    </div>
+                </form>
+                `
+
+        Swal.fire({
+        title: 'Create a new task in <span class="theme-orange">' + clicked_version_name + '</span>',
+        html: html_code,
+        showCancelButton: true,
+        confirmButtonText: 'Confirm',
+        showLoaderOnConfirm: true,
+        preConfirm: (login) => {
+
+            if ($("#task_form")[0].checkValidity()) {
+                $("#task_form").submit();
+            }else
+            {   
+                console.log($("#id_task_type").val())
+                return false;
+            }
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+        });
+
+        $('#id_version option[value="' + clicked_version + '"]').attr("selected", "selected");
+});
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////// -->
+///Update task code
+/////////////////////////////////////////////////////////////////// -->
+$(document).on('click', '.update_task_button', function (){
 
 clicked_version = $(this).closest(".version_card").find(
     ".version_id").text()
+clicked_version_name = $(this).closest(".version_card").find(
+".version_name").text()
+task_id = $(this).closest(".task_row_details").find(
+".task_id").text()
+task_name = $(this).closest(".task_row_details").find(
+".task_name").text()
+task_description = $(this).closest(".task_row_details").next(".row_details_table").find(
+".task_description").text()
+task_priority = $(this).closest(".task_row_details").next(".row_details_table").find(
+".task_priority").text()
+task_end = $(this).closest(".task_row_details").next(".row_details_table").find(
+".task_end").text()
+task_type = $(this).closest(".task_row_details").next(".row_details_table").find(
+".task_type").text()
 
-$('#id_version option[value="' + clicked_version + '"]').attr("selected", "selected");
 
-html_code = $("#task_form_div").html();
+html_code = `
+        <form id="task_form" action="" enctype="multipart/form-data" method="post" autocomplete="off">
+            {% csrf_token %}
+            <div class="row">
+            {{task_form.status.as_hidden}}
+            <div class="col-xl-12 col-md-12 hidden">
+                <div class="form-group">
+                <label class="form-label" for="{{ form.version.id_for_label }}">Version</label>
+                {{task_form.version}}
+            </div>
+            </div>
+            <input class="hidden" type="text" id="id_id_task">
+            <div class="col-xl-12 col-md-12">
+                    <div class="form-group">
+                    <label class="form-label" for="{{ form.task_name.id_for_label }}">Task title</label>
+                    {{task_form.task_name}}
+                </div>
+            </div>
+            <div class="col-xl-12 col-md-12">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.task_description.id_for_label }}">Task description</label>
+                    <textarea name="task_description" cols="40" rows="2" class="form-control" required="" id="id_task_description" pwa2-uuid="EDITOR-0AB-4F2-8FB2D-0F9" pwa-fake-editor="" spellcheck="false" style="resize:none; position: relative !important; z-index: auto !important;"></textarea>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-12">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.task_type.id_for_label }}">Task type</label>
+                    {{task_form.task_type}}
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-12">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.task_end.id_for_label }}">Task end</label>
+                    {{task_form.task_end}}
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-12">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.priority.id_for_label }}">Priority</label>
+                    {{task_form.priority}}
+                </div>
+            </div>
+            <div class="col-xl-12 col-md-12">
+                <div class="form-group">
+                    <label class="form-label" for="{{ form.user_profile.id_for_label }}">Assigned to</label>
+                    {{task_form.user_profile}}
+                </div>
+            </div>
+            </div>
+        </form>
+        `
 
 Swal.fire({
-  title: 'Create a new task',
-  html: html_code,
-  showCancelButton: true,
-  confirmButtonText: 'Look up',
-  showLoaderOnConfirm: true,
-  preConfirm: (login) => {
+title: 'Update task',
+html: html_code,
+showCancelButton: true,
+confirmButtonText: 'Confirm',
+showLoaderOnConfirm: true,
+preConfirm: (login) => {
 
     if ($("#task_form")[0].checkValidity()) {
         $("#task_form").submit();
@@ -203,11 +318,18 @@ Swal.fire({
         return false;
     }
 },
-  allowOutsideClick: () => !Swal.isLoading()
-})
+allowOutsideClick: () => !Swal.isLoading()
 });
 
-
+$('#id_version option[value="' + clicked_version + '"]').attr("selected", "selected");
+$('#id_task_type option[value="' + task_type + '"]').attr("selected", "selected");
+$('#id_task_end option[value="' + task_end + '"]').attr("selected", "selected");
+$('#id_priority option[value="' + task_priority + '"]').attr("selected", "selected");
+$('#id_task_description').text(task_description)
+$('#id_task_name').val(task_name);
+$("#id_id_task").val(task_id);
+ss
+});
 
 </script>
 
