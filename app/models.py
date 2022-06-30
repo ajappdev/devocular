@@ -316,3 +316,13 @@ class Task(models.Model):
         for user in self.assigned_to():
             names += user.complete_name + ", "
         return names[:-2]
+
+    def names_assigned_to_ids(self):
+        """
+        This function returns the ids of the users that this task is assigned
+        to.
+        """
+        ids: str = ""
+        for user in self.assigned_to():
+            ids += str(user.id) + ", "
+        return ids[:-2]

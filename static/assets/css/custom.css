@@ -94,3 +94,7 @@ color:rgb(190, 190, 190)
 {
     overflow: hidden !important;
 }
+.text-end
+{
+    text-align:right !important;
+}

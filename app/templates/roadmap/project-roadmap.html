@@ -42,6 +42,7 @@
                                         <th class="hidden">Task ID</th>
                                         <th>Task name</th>
                                         <th>Assigned to</th>
+                                        <th class="hidden"></th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -53,8 +54,9 @@
                                         <td class="hidden task_id">{{t.id}}</td>
                                         <td class="sorting_1 task_name">{{t.task_name}}</td>
                                         <td class="task_assigned_to">{{t.names_assigned_to}}</td>
+                                        <td class="task_assigned_to_ids hidden">{{t.names_assigned_to_ids}}</td>
                                         <td class="task_status">{{t.status}}</td>
-                                        <td><button class="update_task_button btn btn-sm btn-warning"><i class="fas fa-pen"></i> Edit</button></td>
+                                        <td class="text-end"><button class="update_task_button btn btn-sm btn-warning"><i class="fas fa-pen"></i> Edit</button></td>
                                     </tr>
                                     <tr class="row_details_table detail_task_{{t.id}}">
                                         <td colspan="10">
@@ -248,7 +250,8 @@ task_end = $(this).closest(".task_row_details").next(".row_details_table").find(
 ".task_end").text()
 task_type = $(this).closest(".task_row_details").next(".row_details_table").find(
 ".task_type").text()
-
+ids_assigned_to = $(this).closest(".task_row_details").find(
+".task_assigned_to_ids").text().split(", ")
 
 html_code = `
         <form id="task_form" action="" enctype="multipart/form-data" method="post" autocomplete="off">
@@ -321,6 +324,12 @@ preConfirm: (login) => {
 allowOutsideClick: () => !Swal.isLoading()
 });
 
+for (i=0; i<ids_assigned_to.length; i++)
+{
+    $('#id_user_profile option[value=' + ids_assigned_to[i] + ']').attr(
+        'selected', true);
+}
+
 $('#id_version option[value="' + clicked_version + '"]').attr("selected", "selected");
 $('#id_task_type option[value="' + task_type + '"]').attr("selected", "selected");
 $('#id_task_end option[value="' + task_end + '"]').attr("selected", "selected");
@@ -328,7 +337,7 @@ $('#id_priority option[value="' + task_priority + '"]').attr("selected", "select
 $('#id_task_description').text(task_description)
 $('#id_task_name').val(task_name);
 $("#id_id_task").val(task_id);
-ss
+
 });
 
 </script>
