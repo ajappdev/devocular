@@ -140,6 +140,12 @@ def update_version(request, version_id):
     return render(request, template, context)
 
 
+def surf_gear(request):
+    template = 'surfgear.html'
+    context = {}
+    return render(request, template, context)
+
+
 def ajax_calls(request):
     if request.method == 'POST':
         received_json_data = json.loads(request.body)
