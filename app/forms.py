@@ -27,6 +27,7 @@ class TaskForm(forms.ModelForm):
     class Meta:
         model = am.Task
         fields = (
+            'id',
             'version',
             'task_name',
             'task_description',
@@ -49,3 +50,14 @@ class TaskForm(forms.ModelForm):
         self.fields['status'].required = True
         self.fields['priority'].required = True
 
+
+class VersionForm(forms.ModelForm):
+
+    class Meta:
+        model = am.Version
+        fields = ("project", "version_name", "date_of_release")
+
+    def __init__(self, *args, **kwargs):
+        super(VersionForm, self).__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'

@@ -1,11 +1,15 @@
 # DJANGO DECLARATIONS
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
+from django.template.loader import render_to_string
+from django.http import JsonResponse
 
 # APP DECLARATIONS
 import app.models as am
 import app.forms as af
 
+# GENERAL DECLARATIONS
+import json
 
 # DECLARING FONCTIONS
 def landing_page(request):
@@ -71,28 +75,93 @@ def roadmap(request, project_id):
     versions = am.Project.objects.get(id=project_id).versions()
 
     if request.method == "POST":
+        if "id_id_task" in request.POST:
+            task = am.Task.objects.get(
+                id=int(request.POST['id_id_task']))
+        else:
+            task = am.Task()
 
-        # CREATE NEW TASK
-        new_task = am.Task()
-        new_task.version = am.Version.objects.get(id=request.POST['version'])
-        new_task.task_name = request.POST['task_name']
-        new_task.task_end = request.POST['task_end']
-        new_task.task_description = request.POST['task_description']
-        new_task.priority = request.POST['priority']
-        new_task.status = request.POST['status']
-        new_task.save()
+        task.version = am.Version.objects.get(id=request.POST['version'])
+        task.task_name = request.POST['task_name']
+        task.task_end = request.POST['task_end']
+        task.task_description = request.POST['task_description']
+        task.task_type = request.POST['task_type']
+        task.priority = request.POST['priority']
+        task.status = request.POST['status']
+        task.save()
         
         # ASSIGN USERS TO THIS TASK
-        users_assigned = request.POST['user_profile']
+        task.user_profile.clear()
+        users_assigned = request.POST.getlist('user_profile')
+        print(users_assigned)
         for user in users_assigned:
             user_profile = am.UserProfile.objects.get(id=user)
-            new_task.user_profile.add(user_profile)
+            task.user_profile.add(user_profile)
 
-        new_task.save()
+        task.save()
 
     template = 'roadmap/project-roadmap.html'
     context = {
         "page_title": "Project roadmap",
+        "project_id": project_id,
         "versions": versions, "task_form":task_form}
 
     return render(request, template, context)
+
+
+def add_version(request, project_id):
+    form = af.VersionForm(initial={'project':am.Project.objects.get(id=1)})
+    errors = ""
+    if request.method == "POST":
+        form = af.VersionForm(request.POST)
+        if form.is_valid():
+            form.save()
+        else:
+            errors = form.errors
+    template = 'version/add-version.html'
+    context = {'form': form, "errors": errors}
+    return render(request, template, context)
+
+
+def update_version(request, version_id):
+    version = am.Version.objects.get(id=version_id)
+    form = af.VersionForm(instance=version)
+    errors = ""
+    if request.method == "POST":
+
+        form = af.VersionForm(request.POST, instance=version)
+        if form.is_valid():
+            form.save()
+        else:
+            print(form.errors)
+            errors = form.errors
+    template = 'version/update-version.html'
+    context = {'form': form, "errors": errors}
+    return render(request, template, context)
+
+
+def ajax_calls(request):
+    if request.method == 'POST':
+        received_json_data = json.loads(request.body)
+        action = received_json_data['action']
+
+        if action == "delete_task":
+            id_task = received_json_data['id_task']
+            am.Task.objects.filter(id=id_task).delete()
+            data_dict = {}
+        elif action == "task_details":
+            id_task = received_json_data['id_task']
+            task = am.Task.objects.get(id=id_task)
+            data_dict = {
+                "task_name": task.task_name,
+                "task_type": task.task_type,
+                "task_end": task.task_end,
+                "task_priority": task.priority,
+                "task_version_id": task.version.id,
+                "task_version_name": task.version.version_name,
+                "task_ids_assigned_to": task.names_assigned_to_ids(),
+                "task_description": task.task_description,
+                "task_status": task.status}
+            print(data_dict)
+
+    return JsonResponse(data=data_dict, safe=False)

@@ -63,7 +63,7 @@ class UserProfile(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.user.username
+        return self.complete_name
 
 
 class Project(models.Model):
